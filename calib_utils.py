@@ -80,17 +80,17 @@ class CamCalibration:
         return cameraMatrix, distCoeffs
 
 
-    def exCalibration(self, img, M, dists):
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        ret, corners = cv2.findChessboardCorners(gray, (self.board_width, self.board_height))
-        if ret == True:
-            corners = cv2.cornerSubPix(gray, corners, (5,5), (-1,-1), (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001))
-        
-        cv2.drawChessboardCorners(img, (self.board_width, self.board_height), corners, True)
+    def exCalibration(self, img, M, dists, corners_2d=[]):
+        if len(corners_2d) == 0:
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            ret, corners = cv2.findChessboardCorners(gray, (self.board_width, self.board_height))
+            if ret == True:
+                corners = cv2.cornerSubPix(gray, corners, (5,5), (-1,-1), (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001))
+            corners_2d = corners[:,0,:].astype('float32')  # corners.shape = [num_corners, 1, 2]
+
+        cv2.drawChessboardCorners(img, (self.board_width, self.board_height), corners_2d[:,np.newaxis,:], True)
         cv2.imshow('test', img)
         cv2.waitKey(3000)
-
-        corners_2d = corners[:,0,:].astype('float32')  # corners.shape = [num_corners, 1, 2]
 
         corners_3d = []
         for i in range(self.board_height):
